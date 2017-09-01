@@ -87,7 +87,7 @@ def request_token(url, method='GET', retries=2, **kwargs):
                 break
     except requests.exceptions.RequestException as e:
         print("%s returned %s" % (url, e))
-
+        
     return r
 
 def request(metric_data, scheme, url, timestamp, method='GET', retries=2, **kwargs):
@@ -187,7 +187,7 @@ def main():
         metric_data.append('%s.code %s %s' % (scheme, 700, timestamp))
         metric_data.append('%s.status %s %s' % (scheme, 0, timestamp))
         print_metric(metric_data)
-        sys.exit(STATE_OK)
+        sys.exit(STATE_CRITICAL)
 
     tenant_id = access['token']['tenant']['id']
 
@@ -221,9 +221,11 @@ def main():
         metric_data = []
         metric_data = service_list_metric(r.json()['services'], metric_data, scheme)
 
-
     print_metric(metric_data)
-    sys.exit(STATE_OK)
+    if not r or r.status_code != 200:
+       sys.exit(STATE_CRITICAL)
+    else:
+        sys.exit(STATE_OK)
 
 if __name__ == "__main__":
     main()
